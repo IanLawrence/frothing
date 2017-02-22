@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
+
+<xsl:output version="1.0" method="xml" indent="yes"/>
+
+<xsl:template match="/node">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
+##STYLE_INSERT##
+</head>
+<body>
+
+<table class="feedhead" cellspacing="0">
+<tr>
+  <td valign="middle" class="headleft">
+    <b><span>Search Folder:</span>
+    <span xml:lang="ar">مجلّد بحث:</span>
+    <span xml:lang="be@latin">Kataloh pošuku:</span>
+    <span xml:lang="ca">Carpeta de cerca:</span>
+    <span xml:lang="de">Suchordner:</span>
+    <span xml:lang="es">Carpeta de búsquedal:</span>
+    <span xml:lang="eu">Bilaketaren karpeta:</span>
+    <span xml:lang="fr">Dossier de recherche :</span>
+    <span xml:lang="it">Cartella ricerche:</span>
+    <span xml:lang="ja">検索するフォルダ:</span>
+    <span xml:lang="pl">Znajdź w katalogu:</span>
+    <span xml:lang="pt_BR">Pasta Virtual:</span>
+    <span xml:lang="ru">Искать папку:</span>
+    <span xml:lang="sv">Sökmapp:</span>
+    <span xml:lang="tr">Arama Klasörü:</span></b>
+  </td>
+  <td width="100%" valign="middle" class="headright">
+     <b><xsl:value-of select="title"/></b>
+  </td>
+</tr>
+</table>
+
+<div class='content'>
+  <p>
+   <b><xsl:value-of select="unreadCount"/></b>
+   <span>unread headlines</span>
+   <span xml:lang="ar">رؤوس العناوين لم تقرأ</span>
+   <span xml:lang="be@latin">niečytanyja zahałoŭki</span>
+   <span xml:lang="ca">titulars sense llegir</span>
+   <span xml:lang="de">ungelesenen Schlagzeilen</span>
+   <span xml:lang="es">titulares no leídos</span>
+   <span xml:lang="eu">irakurri gabeko goiburuak</span>
+   <span xml:lang="fr">titres non lus</span>
+   <span xml:lang="pl">nieprzeczytanych pozycji</span>
+   <span xml:lang="pt_BR">manchetes não lidas</span>
+   <span xml:lang="sv">olästa rubriker</span>
+   <span xml:lang="tr">okunmamış haber başlığı</span> 
+  </p>
+</div>
+
+</body>
+</html>
+</xsl:template>
+</xsl:stylesheet>

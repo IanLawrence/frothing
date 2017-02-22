@@ -1,0 +1,11 @@
+[Desktop Entry]
+_Name=Liferea Feed Reader
+_GenericName=Feed Reader
+_Comment=Download and view feeds
+Exec=liferea
+Icon=liferea
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Network;News;
+Version=0.9.4

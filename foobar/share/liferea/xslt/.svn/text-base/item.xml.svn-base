@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml" version="1.0">
+
+<xsl:output version="1.0" method="xml" indent="yes"/>
+
+
+<xsl:param name="pixmapsDir"/>
+<xsl:param name="baseUrl"/>
+<xsl:param name="summary"/>	
+<xsl:param name="single"/>	
+
+<xsl:template match="/itemset">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
+</head>
+<body>
+
+
+<div href="{$baseUrl}">
+
+<xsl:for-each select="item">
+  <xsl:choose>
+    <xsl:when test="$summary = '1'">
+      <xsl:call-template name="item_summary"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:call-template name="item"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:for-each>
+
+</div> 
+
+</body>
+</html>
+
+</xsl:template>
+
+
+
+
+<xsl:template name="item">
+
+
+<div href="{/itemset/feed/feedSource}">
+
+
+
+<xsl:variable name="onMouseOver">
+   <xsl:text disable-output-escaping='yes'>doShow('</xsl:text>
+   <xsl:value-of select="sourceId"/>-<xsl:value-of select="nr"/>
+   <xsl:text disable-output-escaping='yes'>');</xsl:text>
+</xsl:variable>
+
+
+
+<div onmouseover="{$onMouseOver}" onmouseout="stopShow();">
+
+
+<xsl:variable name="flagclass">
+  <xsl:if test="mark = '0'">un</xsl:if>
+  <xsl:text>flagged</xsl:text>
+</xsl:variable>
+<table class="itemhead {$flagclass}" cellspacing="0" cellpadding="0">
+
+<tr>
+  <td valign="middle" class="headleft">
+    
+    
+    <xsl:variable name="favicon">
+      <xsl:choose>
+        <xsl:when test="not(sourceFavicon)">
+          <xsl:value-of select="/itemset/feed/favicon"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="sourceFavicon"/>
+        </xsl:otherwise>
+      </xsl:choose>   
+    </xsl:variable>
+    
+    <a href="{/itemset/feed/feedLink}" class="favicon">
+      <img src="{$favicon}"/>
+    </a>
+  </td>
+  <td width="100%" valign="middle" class="headright">
+    
+    <a href="{source}" class="itemhead">
+      <xsl:value-of select="title"/>
+      
+      <xsl:if test="title = ''">
+         <xsl:value-of select="timestr"/> 
+      </xsl:if>
+    </a>
+  </td>
+</tr>
+</table>
+
+
+<xsl:for-each select="attributes/attribute[ @name = 'enclosure' ]">
+<table class="enclosure" cellspacing="0" cellpadding="0">
+
+<tr>
+  <td valign="middle" class="headleft">
+    <a href="liferea-enclosure://load?{.}" class="favicon">
+      <img src="{$pixmapsDir}attachment.png" class="enclosurebtn" border="0"/>
+    </a>
+  </td>
+  <td width="99%">
+   <xsl:choose>
+    <xsl:when test="contains(.,'mp3') or contains(.,'ogg')">
+      <span class="xspf_player">
+        <xsl:variable name="song">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param select="." name="input"/>
+            <xsl:with-param select="'/'" name="substr"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="player">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param select="." name="input"/>
+            <xsl:with-param select="'/'" name="substr"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <object width="400" type="application/x-shockwave-flash" height="15" data="{$pixmapsDir}../media/xspf_player_slim.swf?song_title={$song}&amp;song_url={.}&amp;player_title=Click+to+play+{$player}...">
+          <xsl:call-template name="enclosure"/>
+        </object>
+      </span>
+     </xsl:when>
+     <xsl:otherwise>
+       <xsl:call-template name="enclosure"/>
+     </xsl:otherwise> 
+   </xsl:choose>
+  </td>
+</tr>
+
+</table>
+</xsl:for-each>
+
+
+<table class='headmeta' cellspacing="0" cellpadding="0">
+
+<xsl:if test="attributes/attribute[ @name = 'slash' ]">
+<tr>
+ <td valign="top" class='slash'> 
+   <xsl:apply-templates select="attributes/attribute[ @name = 'slash']"/>
+ </td>
+</tr> 
+</xsl:if>
+
+<xsl:if test="real_source_url">
+<tr>
+ <td valign="top" class='source'> 
+     <span>Source</span>
+     <span xml:lang="ar">المصدر</span>
+     <span xml:lang="be@latin">Krynica</span>
+     <span xml:lang="ca">Font</span>
+     <span xml:lang="de">Quelle</span>
+     <span xml:lang="es">Fuente</span>
+     <span xml:lang="eu">Iturburua</span>
+     <span xml:lang="fr">Source</span>
+     <span xml:lang="it">Sorgente</span>
+     <span xml:lang="ja">ソース</span>
+     <span xml:lang="pl">Źródło</span>
+     <span xml:lang="pt_BR">Fonte</span>
+     <span xml:lang="ru">Источник</span>
+     <span xml:lang="sv">Källa</span>
+     <span xml:lang="tr">Kaynak</span>
+     <b><span class='source'>
+       <a href="{real_source_url}">
+         <xsl:value-of select="real_source_title"/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+
+<xsl:if test="not(/itemset/source) and /itemset/feed/feedTitle">
+<tr>
+ <td valign="top" class='source'> 
+     <span>Feed</span>
+     <span xml:lang="ar">تلقيمة</span>
+     <span xml:lang="be@latin">Kanał</span>
+     <span xml:lang="de">Abonnement</span>
+     <span xml:lang="es">Canal</span>
+     <span xml:lang="eu">Iturria</span>
+     <span xml:lang="fr">Flux</span>
+     <span xml:lang="pt_BR">Fontes de Notícias</span>
+     <span xml:lang="sv">Kanal</span>
+     <span xml:lang="tr">Haber</span>
+     <b><span class='source'>
+       <a href="{/itemset/feed/feedLink}">
+         <xsl:value-of select="/itemset/feed/feedTitle"/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+<xsl:if test="attributes/attribute[ @name = 'category' ]">
+<tr>
+ <td valign="top" class='categories'>
+     <span>Filed under</span>
+     <span xml:lang="ar">وُضِع تحت</span>
+     <span xml:lang="be@latin">Vykładziena na</span>
+     <span xml:lang="ca">Arxivat a</span>
+     <span xml:lang="de">Unter</span>
+     <span xml:lang="es">Archivado en</span>
+     <span xml:lang="eu">Hemen artxibatua</span>
+     <span xml:lang="fr">Classé sous</span>
+     <span xml:lang="it">Memorizzato sotto</span>
+     <span xml:lang="ja">カテゴリ:</span>
+     <span xml:lang="pl">Zaszeregowano w</span>
+     <span xml:lang="pt_BR">Arquivado sob</span>
+     <span xml:lang="ru">Опубликовано в</span>
+     <span xml:lang="sv">Arkiverad under</span>
+     <span xml:lang="tr">Dosyalandığı yer</span>
+     <b><span class='categories'>
+       <xsl:for-each select="attributes/attribute[ @name = 'category' ]">
+         <xsl:if test="position() != 1">, </xsl:if>
+         <xsl:value-of select="." disable-output-escaping='yes'/>
+       </xsl:for-each>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+<xsl:if test="attributes/attribute[ @name = 'author' ]">
+ <tr>
+   <td valign="top" class='author'>
+     <span>Author</span>
+     <span xml:lang="ar">المؤلّف</span>
+     <span xml:lang="be@latin">Aŭtar</span>
+     <span xml:lang="ca">Autor</span>
+     <span xml:lang="de">Autor</span>
+     <span xml:lang="es">Autor</span>
+     <span xml:lang="eu">Egilea</span>
+     <span xml:lang="fr">Auteur</span>
+     <span xml:lang="it">Autore</span>
+     <span xml:lang="ja">作者</span>
+     <span xml:lang="pl">Autor</span>
+     <span xml:lang="pt_BR">Autor</span>
+     <span xml:lang="ru">Автор</span>
+     <span xml:lang="sv">Författare</span>
+     <span xml:lang="tr">Yazar</span>
+     <b><span class='author'>
+       <xsl:value-of select="attributes/attribute[ @name = 'author' ]" disable-output-escaping='yes'/>
+     </span></b>
+   </td>
+ </tr>
+</xsl:if>  
+
+<xsl:for-each select="duplicates/duplicateNode">
+<tr>
+ <td valign="top" class='source'> 
+     <span>Also posted in</span>
+     <span xml:lang="ar">منشورة أيضا في</span>
+     <span xml:lang="be@latin">Taksama napisana ŭ</span>
+     <span xml:lang="de">Auch in</span>
+     <span xml:lang="es">Publicada también en</span>
+     <span xml:lang="eu">Hemen argitaratua ere</span>
+     <span xml:lang="fr">Aussi posté dans</span>
+     <span xml:lang="pt_BR">Também publicado em</span>
+     <span xml:lang="sv">Även postad i</span>
+     <span xml:lang="tr">Tekrarlanan yer</span>
+     <b><span class='source'>
+         <xsl:value-of select="."/>
+     </span></b>
+ </td>
+</tr>
+</xsl:for-each>
+
+<xsl:if test="attributes/attribute[ @name = 'creator' ]">
+ <tr>
+   <td valign="top" class='creator'>
+     <span>Creator</span>
+     <span xml:lang="ar">المنشيء</span>
+     <span xml:lang="be@latin">Stvaralnik</span>
+     <span xml:lang="de">Ersteller</span>
+     <span xml:lang="es">Creador</span>
+     <span xml:lang="eu">Sortzailea</span>
+     <span xml:lang="fr">Créateur</span>
+     <span xml:lang="it">Autore</span>
+     <span xml:lang="pt_BR">Criador</span>
+     <span xml:lang="sv">Skapare</span>
+     <span xml:lang="tr">Oluşturan</span>
+     <b><span class='creator'>
+       <xsl:value-of select="attributes/attribute[ @name = 'creator' ]" disable-output-escaping='yes'/>
+     </span></b>
+   </td>
+ </tr>
+</xsl:if>  
+
+</table> 
+
+
+<xsl:variable name="hiddenMenu">
+   <xsl:if test="$single = 1">hidden</xsl:if>
+</xsl:variable>
+
+<table id="{sourceId}-{nr}" class="headmeta {$hiddenMenu}" cellspacing="0" cellpadding="0">
+<tr>
+ <td class='itemmenu'> 
+
+  
+
+  
+  <a href="liferea-flag://{sourceId}-{sourceNr}" class="flag">
+    <xsl:variable name="png">
+      <xsl:if test="mark = '0'">grayflag.png</xsl:if>
+      <xsl:if test="mark = '1'">flag.png</xsl:if>
+    </xsl:variable>
+    <img src="{$pixmapsDir}{$png}" class="flagbtn" border="0"/>
+    <span>flag</span>
+    <span xml:lang="ar">شارة</span>
+    <span xml:lang="be@latin">ściah</span>
+    <span xml:lang="ca">senyalador</span>
+    <span xml:lang="de">Markieren</span>
+    <span xml:lang="es">marcar</span>
+    <span xml:lang="eu">bandera</span>
+    <span xml:lang="fr">marqueur</span>
+    <span xml:lang="it">flag</span>
+    <span xml:lang="ja">フラグ</span>
+    <span xml:lang="pl">flaga</span>
+    <span xml:lang="pt_BR">sinalizar</span>
+    <span xml:lang="ru">флаг</span>
+    <span xml:lang="sv">flagga</span>
+    <span xml:lang="tr">işaret</span>
+  </a>
+   
+  
+  
+
+  
+  <a href="liferea-bookmark://{sourceId}-{nr}" class="bookmark">
+    <img src="{$pixmapsDir}bookmark.png" class="bookmarkbtn" border="0"/>
+    <span>bookmark</span>
+    <span xml:lang="ar">علامة</span>
+    <span xml:lang="be@latin">zakładka</span>
+    <span xml:lang="ca">adreça d'interès</span>
+    <span xml:lang="de">Bookmark</span>
+    <span xml:lang="es">marcador</span>
+    <span xml:lang="eu">laster-marka</span>
+    <span xml:lang="fr">marque-page</span>
+    <span xml:lang="it">segnalibro</span>
+    <span xml:lang="ja">ブックマーク</span>
+    <span xml:lang="pl">zakładka</span>
+    <span xml:lang="pt_BR">favorito</span>
+    <span xml:lang="ru">закладка</span>
+    <span xml:lang="sv">bokmärke</span>
+    <span xml:lang="tr">yer imi</span>
+  </a>
+
+  
+  <xsl:if test="attributes/attribute[ @name = 'commentsUri' ]">
+    <a href="{attributes/attribute[ @name = 'commentsUri' ]}" class="comments">
+      <img src="{$pixmapsDir}comments.png" class="commentsbtn" border="0"/>
+      <span>comments</span>
+      <span xml:lang="ar">تعليقات</span>
+      <span xml:lang="be@latin">kamentary</span>
+      <span xml:lang="ca">comentaris</span>
+      <span xml:lang="de">Kommentare</span>
+      <span xml:lang="es">comentarios</span>
+      <span xml:lang="eu">iruzkinak</span>
+      <span xml:lang="fr">commentaires</span>
+      <span xml:lang="it">commenti</span>
+      <span xml:lang="ja">コメント</span>
+      <span xml:lang="pl">komentarze</span>
+      <span xml:lang="pt_BR">comentários</span>
+      <span xml:lang="ru">комментировать</span>
+      <span xml:lang="sv">kommentarer</span>
+      <span xml:lang="tr">yorumlar</span>
+    </a>
+  </xsl:if>
+
+  
+  <a href="http://www.technorati.com/cosmos/search.html?url={source}" class="technorati">
+    <img src="{$pixmapsDir}technorati.png" class="technoratibtn" border="0" alt="[Technorati]"/>
+    <span>search</span>
+    <span xml:lang="ar">ابحث</span>
+    <span xml:lang="be@latin">pošuk</span>
+    <span xml:lang="ca">cerca</span>
+    <span xml:lang="de">Suche</span>
+    <span xml:lang="es">buscar</span>
+    <span xml:lang="eu">bilatu</span>
+    <span xml:lang="fr">chercher</span>
+    <span xml:lang="it">cerca</span>
+    <span xml:lang="ja">検索</span>
+    <span xml:lang="pl">znajdź</span>
+    <span xml:lang="pt_BR">pesquisar</span>
+    <span xml:lang="ru">поиск</span>
+    <span xml:lang="sv">sök</span>
+    <span xml:lang="tr">ara</span>
+  </a>
+
+ </td>
+</tr>
+</table> 
+
+<xsl:variable name="shading">
+  <xsl:if test="readStatus = '0'">itemshaded</xsl:if>
+  <xsl:if test="readStatus != '0'">itemunshaded</xsl:if>
+</xsl:variable>
+
+<div class="{$shading}">
+<div class='content'>
+  
+  <p>
+    <xsl:value-of select="description" disable-output-escaping='yes'/>
+  </p>
+  
+  
+  <xsl:if test="attributes/attribute[ @name = 'commentFeedUri' ]"> 
+     <p>     
+     <xsl:choose>
+        <xsl:when test="count(comments/item) = 0">
+           <b><span>No comments yet.</span>
+           <span xml:lang="ar">لا تعليقات حتى الآن</span>
+           <span xml:lang="be@latin">Jašče niama kamentaroŭ.</span>
+           <span xml:lang="de">Keine Kommentare bisher.</span>
+           <span xml:lang="es">Aún no hay comentarios.</span>
+           <span xml:lang="fr">Pas encore de commentaires.</span>
+           <span xml:lang="it">Nessun commento</span>
+           <span xml:lang="pt_BR">Sem comentários.</span>
+           <span xml:lang="sv">Inga kommentarer än.</span>
+           <span xml:lang="tr">Henüz yorum yok</span></b>
+        </xsl:when>
+        <xsl:otherwise>
+	   <b><span>Comments</span>
+	   <span xml:lang="ar">تعليقات</span>
+	   <span xml:lang="be@latin">Kamentary</span>
+	   <span xml:lang="de">Kommentare</span>
+	   <span xml:lang="es">Comentarios</span>
+	   <span xml:lang="fr">Commentaires</span>
+	   <span xml:lang="it">Commenti</span>
+	   <span xml:lang="pt_BR">comentários</span>
+	   <span xml:lang="sv">Kommentarer</span>
+	   <span xml:lang="tr">Yorumlar</span></b>
+	</xsl:otherwise>
+     </xsl:choose>
+  
+     
+     <xsl:choose>
+        <xsl:when test="comments/updateState = 'updating'">
+           (<span>
+	      <span>Updating...</span>
+	      <span xml:lang="ar">جارِ تحديث...</span>
+	      <span xml:lang="be@latin">Aktualizacyja...</span>
+	      <span xml:lang="de">Aktualisiere...</span>
+	      <span xml:lang="es">Actualizando...</span>
+	      <span xml:lang="fr">Mise à jour...</span>
+	      <span xml:lang="pt_BR">Atualizando...</span>
+	      <span xml:lang="sv">Uppdaterar...</span>
+	      <span xml:lang="tr">Güncelleniyor...</span>
+	    </span>)
+	</xsl:when>
+        <xsl:otherwise>
+           (<a href="liferea-refresh-comments://{sourceId}-{sourceNr}">
+              <span>Refresh</span>
+              <span xml:lang="ar">حدِّث</span>
+              <span xml:lang="be@latin">Aktualizuj</span>
+              <span xml:lang="de">Aktualisieren</span>
+              <span xml:lang="es">Actualizar</span>
+              <span xml:lang="fr">Rafraîchir</span>
+              <span xml:lang="it">Aggiorna</span>
+              <span xml:lang="pt_BR">Atualizar</span>
+              <span xml:lang="sv">Uppdatera</span>
+              <span xml:lang="tr">Yenile</span>
+           </a>)
+        </xsl:otherwise>
+     </xsl:choose>
+     
+     </p>
+     
+     
+     <xsl:if test="comments/updateError">
+        <p>
+	   <div id="errors">
+	      <div id="updateError">
+	         <xsl:value-of select="comments/updateError"/>
+	      </div>
+	   </div>
+	</p>
+     </xsl:if>
+     
+     <p>     
+        <xsl:apply-templates select="comments/item">
+           <xsl:sort select="time"/>
+        </xsl:apply-templates>
+     </p>    
+  </xsl:if>
+</div>
+</div> 
+</div> 
+
+</div> 
+
+</xsl:template>
+
+
+
+
+<xsl:template match="attributes/attribute[ @name = 'slash']">
+  <span class="slashSection"><span>Section</span>
+  <span xml:lang="ar">القسم</span>
+  <span xml:lang="be@latin">Raździeł</span>
+  <span xml:lang="ca">Secció</span>
+  <span xml:lang="de">Section</span>
+  <span xml:lang="es">Sección</span>
+  <span xml:lang="eu">Sekzioa</span>
+  <span xml:lang="fr">Section</span>
+  <span xml:lang="pt_BR">Seção</span>
+  <span xml:lang="ru">Секция</span>
+  <span xml:lang="sv">Avsnitt</span>
+  <span xml:lang="tr">Kısım</span></span>
+  <span class="slashValue"><xsl:value-of select="substring-before(., ',')"/></span>
+  <span class="slashDepartment"><span>Department</span>
+  <span xml:lang="ar">المصلحة</span>
+  <span xml:lang="be@latin">Addzieł</span>
+  <span xml:lang="ca">Departament</span>
+  <span xml:lang="de">Department</span>
+  <span xml:lang="es">Departamento</span>
+  <span xml:lang="eu">Saila</span>
+  <span xml:lang="fr">Département</span>
+  <span xml:lang="pt_BR">Departamento</span>
+  <span xml:lang="ru">Отдел</span>
+  <span xml:lang="sv">Avdelning</span>
+  <span xml:lang="tr">Bölüm</span></span>
+  <span class="slashValue"><xsl:value-of select="substring-after(., ',')"/></span>
+</xsl:template>
+
+
+
+
+<xsl:template name="enclosure">
+  <a href="{.}" class="enclosure">
+    <xsl:call-template name="substring-after-last">
+      <xsl:with-param select="." name="input"/>
+      <xsl:with-param select="'/'" name="substr"/>
+    </xsl:call-template>
+  </a>
+</xsl:template>
+
+
+
+
+<xsl:template match="comments/item">
+   <div class="comment">
+      <div class="comment_title"><xsl:value-of select="title"/></div>
+      <div class="comment_body"><xsl:value-of select="description" disable-output-escaping='yes'/></div>
+   </div>
+</xsl:template>
+
+
+
+
+<xsl:template name="item_summary">
+
+<xsl:variable name="summaryShading">
+   <xsl:choose>
+      <xsl:when test="readStatus = '0'">summaryshaded</xsl:when>
+      <xsl:otherwise>summaryunshaded</xsl:otherwise>
+   </xsl:choose> summary<xsl:if test="mark = '0'">un</xsl:if>flagged
+</xsl:variable>
+    
+<div class="{$summaryShading}">
+  <table width="100%" cellspacing="0" cellpadding="0">
+  <tr>
+    <td valign="top" class="summarytime">
+      <xsl:value-of select="timestr"/>
+    </td>
+    <td width="100%">
+      
+      <a href="{source}">
+        <xsl:value-of select="title"/>
+      </a>
+
+      
+      <xsl:if test="description">
+        <br/><br/>
+        <xsl:value-of select="description" disable-output-escaping='yes'/>
+      </xsl:if>
+
+      
+      <xsl:for-each select="attributes/attribute[ @name = 'enclosure' ]">
+        (<a href="{.}" class="enclosure">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param select="." name="input"/>
+            <xsl:with-param select="'/'" name="substr"/>
+          </xsl:call-template>
+        </a>)
+      </xsl:for-each>
+
+    </td>
+  </tr>
+  </table>
+    
+  <hr class='summary'/>
+
+</div>
+</xsl:template>
+
+
+
+
+<xsl:template name="substring-after-last">
+    <xsl:param name="input"/>
+    <xsl:param name="substr"/>
+    
+    
+    <xsl:variable select="substring-after($input,$substr)" name="temp"/>
+    
+    <xsl:choose>
+      
+      <xsl:when test="$substr and contains($temp,$substr)">
+        <xsl:call-template name="substring-after-last">
+          <xsl:with-param select="$temp" name="input"/>
+          <xsl:with-param select="$substr" name="substr"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$temp"/>
+      </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+</xsl:stylesheet>

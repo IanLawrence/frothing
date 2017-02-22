@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt
+END
+feed.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/feed.xml.in
+END
+newsbin.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/newsbin.xml.in
+END
+folder.xml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/folder.xml
+END
+i18n-filter.xslt
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/i18n-filter.xslt
+END
+item.xml
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/item.xml
+END
+folder.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/folder.xml.in
+END
+source.xml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/source.xml
+END
+vfolder.xml
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/vfolder.xml
+END
+feed.xml
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/feed.xml
+END
+item.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/item.xml.in
+END
+source.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/source.xml.in
+END
+newsbin.xml
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/newsbin.xml
+END
+vfolder.xml.in
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/2/trunk/foobar/share/liferea/xslt/vfolder.xml.in
+END

@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/foobar/share/liferea
+END
+liferea_hildon.glade
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/2/trunk/foobar/share/liferea/liferea_hildon.glade
+END
+node_source.glade
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/2/trunk/foobar/share/liferea/node_source.glade
+END
+opml_source.glade
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/2/trunk/foobar/share/liferea/opml_source.glade
+END
+liferea.glade
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/foobar/share/liferea/liferea.glade
+END
+google_source.glade
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/2/trunk/foobar/share/liferea/google_source.glade
+END
+bloglines_source.glade
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/2/trunk/foobar/share/liferea/bloglines_source.glade
+END

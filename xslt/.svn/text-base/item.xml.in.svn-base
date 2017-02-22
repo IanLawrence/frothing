@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/**
+ * Rendering stylesheet for Liferea (item view: item rendering)
+ *
+ * Copyright (C) 2006-2007 Lars Lindner <lars.lindner@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version. 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+--> 
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
+                xmlns="http://www.w3.org/1999/xhtml">
+
+<xsl:output method="xml" version="1.0" indent="yes"/>
+
+<!-- the local pixmap directory (e.g. /usr/share/liferea/pixmaps/) -->
+<xsl:param name="pixmapsDir"/>
+<xsl:param name="baseUrl"/>
+<xsl:param name="summary"/>	<!-- 1=summary rendering, 0=normal rendering -->
+<xsl:param name="single"/>	<!-- 1=single item rendering, 0=2 pane mode -->
+
+<xsl:template match="/itemset">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+</head>
+<body>
+
+<!-- base URL of the itemset -->
+<div href="{$baseUrl}">
+
+<xsl:for-each select="item">
+  <xsl:choose>
+    <xsl:when test="$summary = '1'">
+      <xsl:call-template name="item_summary"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:call-template name="item"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:for-each>
+
+</div> <!-- end of base URL div -->
+
+</body>
+</html>
+
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!---single item detailed mode rendering -->
+<xsl:template name="item">
+
+<!-- base URL of parent feed -->
+<div href="{/itemset/feed/feedSource}">
+
+<!-- the item -->
+
+<xsl:variable name="onMouseOver">
+   <xsl:text disable-output-escaping='yes'>doShow('</xsl:text>
+   <xsl:value-of select="sourceId"/>-<xsl:value-of select="nr"/>
+   <xsl:text disable-output-escaping='yes'>');</xsl:text>
+</xsl:variable>
+
+<!-- entering header starts delayed show of the item menu -->
+<!-- leaving header stops show counter -->
+<div onmouseover="{$onMouseOver}" onmouseout="stopShow();">
+
+<!-- header table -->
+<xsl:variable name="flagclass">
+  <xsl:if test="mark = '0'">un</xsl:if>
+  <xsl:text>flagged</xsl:text>
+</xsl:variable>
+<table class="itemhead {$flagclass}" cellspacing="0" cellpadding="0">
+
+<tr>
+  <td valign="middle" class="headleft">
+    <!-- Feed link as favicon -->
+    
+    <xsl:variable name="favicon">
+      <xsl:choose>
+        <xsl:when test="not(sourceFavicon)">
+          <xsl:value-of select="/itemset/feed/favicon"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="sourceFavicon"/>
+        </xsl:otherwise>
+      </xsl:choose>   
+    </xsl:variable>
+    
+    <a class="favicon" href="{/itemset/feed/feedLink}">
+      <img src="{$favicon}"/>
+    </a>
+  </td>
+  <td width="100%" valign="middle" class="headright">
+    <!-- Item title as link -->
+    <a class="itemhead" href="{source}">
+      <xsl:value-of select="title"/>
+      <!-- the title added above might be empty, in this 
+           case we add the date of the post -->
+      <xsl:if test="title = ''">
+         <xsl:value-of select="timestr"/> 
+      </xsl:if>
+    </a>
+  </td>
+</tr>
+</table>
+
+<!-- enclosures -->
+<xsl:for-each select="attributes/attribute[ @name = 'enclosure' ]">
+<table class="enclosure" cellpadding="0" cellspacing="0">
+
+<tr>
+  <td valign="middle" class="headleft">
+    <a class="favicon" href="liferea-enclosure://load?{.}">
+      <img border="0" class="enclosurebtn" src="{$pixmapsDir}attachment.png"/>
+    </a>
+  </td>
+  <td width="99%">
+   <xsl:choose>
+    <xsl:when test="contains(.,'mp3') or contains(.,'ogg')">
+      <span class="xspf_player">
+        <xsl:variable name="song">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param name="input"  select="." />
+            <xsl:with-param name="substr" select="'/'" />
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="player">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param name="input"  select="." />
+            <xsl:with-param name="substr" select="'/'" />
+          </xsl:call-template>
+        </xsl:variable>
+        <object type="application/x-shockwave-flash" width="400" height="15"
+           data="{$pixmapsDir}../media/xspf_player_slim.swf?song_title={$song}&amp;song_url={.}&amp;player_title=Click+to+play+{$player}...">
+          <xsl:call-template name="enclosure"/>
+        </object>
+      </span>
+     </xsl:when>
+     <xsl:otherwise>
+       <xsl:call-template name="enclosure"/>
+     </xsl:otherwise> 
+   </xsl:choose>
+  </td>
+</tr>
+
+</table>
+</xsl:for-each>
+
+<!-- header metadata (author + categories + date + source feed) -->
+<table class='headmeta' cellspacing="0" cellpadding="0">
+
+<xsl:if test="attributes/attribute[ @name = 'slash' ]">
+<tr>
+ <td valign="top" class='slash'> 
+   <xsl:apply-templates select="attributes/attribute[ @name = 'slash']"/>
+ </td>
+</tr> 
+</xsl:if>
+
+<xsl:if test="real_source_url">
+<tr>
+ <td valign="top" class='source'> 
+     <_span>Source</_span>
+     <b><span class='source'>
+       <a href="{real_source_url}">
+         <xsl:value-of select="real_source_title"/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+<!-- If there is no item set source then this is a merged item list
+     rendering and we should display the source feed title for the item.
+     Only exception: News Bins which do not have an itemset source. -->
+<xsl:if test="not(/itemset/source) and /itemset/feed/feedTitle">
+<tr>
+ <td valign="top" class='source'> 
+     <_span>Feed</_span>
+     <b><span class='source'>
+       <a href="{/itemset/feed/feedLink}">
+         <xsl:value-of select="/itemset/feed/feedTitle"/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+<xsl:if test="attributes/attribute[ @name = 'category' ]">
+<tr>
+ <td valign="top" class='categories'>
+     <_span>Filed under</_span>
+     <b><span class='categories'>
+       <xsl:for-each select="attributes/attribute[ @name = 'category' ]">
+         <xsl:if test="position() != 1">, </xsl:if>
+         <xsl:value-of select="." disable-output-escaping='yes'/>
+       </xsl:for-each>
+     </span></b>
+ </td>
+</tr>
+</xsl:if>
+
+<xsl:if test="attributes/attribute[ @name = 'author' ]">
+ <tr>
+   <td valign="top" class='author'>
+     <_span>Author</_span>
+     <b><span class='author'>
+       <xsl:value-of select="attributes/attribute[ @name = 'author' ]" disable-output-escaping='yes'/>
+     </span></b>
+   </td>
+ </tr>
+</xsl:if>  
+
+<!-- Indicate Atom "via" and "related" links -->
+<xsl:for-each select="attributes/attribute[ @name = 'via' ]">
+<tr>
+ <td valign="top" class='source'> 
+     <_span>Via</_span>
+     <b><span class='source'>
+       <a href="{.}">
+         <xsl:value-of select="."/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:for-each>
+<xsl:for-each select="attributes/attribute[ @name = 'related' ]">
+<tr>
+ <td valign="top" class='source'> 
+     <_span>Related</_span>
+     <b><span class='source'>
+       <a href="{.}">
+         <xsl:value-of select="."/>
+       </a>
+     </span></b>
+ </td>
+</tr>
+</xsl:for-each>
+
+<!-- Indicate all duplicates -->
+<xsl:for-each select="duplicates/duplicateNode">
+<tr>
+ <td valign="top" class='source'> 
+     <_span>Also posted in</_span>
+     <b><span class='source'>
+         <xsl:value-of select="."/>
+     </span></b>
+ </td>
+</tr>
+</xsl:for-each>
+
+<xsl:if test="attributes/attribute[ @name = 'creator' ]">
+ <tr>
+   <td valign="top" class='creator'>
+     <_span>Creator</_span>
+     <b><span class='creator'>
+       <xsl:value-of select="attributes/attribute[ @name = 'creator' ]" disable-output-escaping='yes'/>
+     </span></b>
+   </td>
+ </tr>
+</xsl:if>  
+
+</table> <!-- end of header metadata -->
+
+<!-- construct unique id to allow Javascript showing/hiding of itemmenu -->
+<xsl:variable name="hiddenMenu">
+   <xsl:if test="$single = 1">hidden</xsl:if>
+</xsl:variable>
+
+<table id="{sourceId}-{nr}" class="headmeta {$hiddenMenu}"
+       cellspacing="0" cellpadding="0">
+<tr>
+ <td class='itemmenu'> 
+
+  <!-- for comment link and search engine link -->
+
+  <!-- Flagging link -->
+  <a class="flag" href="liferea-flag://{sourceId}-{sourceNr}">
+    <xsl:variable name="png">
+      <xsl:if test="mark = '0'">grayflag.png</xsl:if>
+      <xsl:if test="mark = '1'">flag.png</xsl:if>
+    </xsl:variable>
+    <img border="0" class="flagbtn" src="{$pixmapsDir}{$png}"/>
+    <_span>flag</_span>
+  </a>
+   
+  <!-- Tagging link -->
+  <!--<a class="bookmark" href="liferea-tag://{sourceId}-{nr}">
+    <img border="0" class="tagbtn" src="{$pixmapsDir}tag.png"/>
+    <_span>add tag</_span>
+  </a>-->
+
+  <!-- Bookmarking link -->
+  <a class="bookmark" href="liferea-bookmark://{sourceId}-{nr}">
+    <img border="0" class="bookmarkbtn" src="{$pixmapsDir}bookmark.png"/>
+    <_span>bookmark</_span>
+  </a>
+
+  <!-- Comments link -->
+  <xsl:if test="attributes/attribute[ @name = 'commentsUri' ]">
+    <a class="comments" href="{attributes/attribute[ @name = 'commentsUri' ]}">
+      <img border="0" class="commentsbtn" src="{$pixmapsDir}comments.png"/>
+      <_span>comments</_span>
+    </a>
+  </xsl:if>
+
+  <!-- Technorati link -->
+  <a class="technorati"
+     href="http://www.technorati.com/cosmos/search.html?url={source}">
+    <img class="technoratibtn" border="0" alt="[Technorati]"
+         src="{$pixmapsDir}technorati.png"/>
+    <_span>search</_span>
+  </a>
+
+ </td><!-- end of comment and search engine link -->
+</tr>
+</table> <!-- itemmenutable -->
+
+<xsl:variable name="shading">
+  <xsl:if test="readStatus = '0'">itemshaded</xsl:if>
+  <xsl:if test="readStatus != '0'">itemunshaded</xsl:if>
+</xsl:variable>
+
+<div class="{$shading}">
+<div class='content'>
+  <!-- the items content -->
+  <p>
+    <xsl:value-of select="description" disable-output-escaping='yes'/>
+  </p>
+  
+  <!-- photo namespace handling -->
+  <xsl:if test="attributes/attribute[ @name = 'photo' ]">
+     <xsl:element name="img">
+        <xsl:attribute name="src">
+	   <xsl:call-template name="substring-after-last">
+	     <xsl:with-param name="input"  select="attributes/attribute[ @name = 'photo' ]" />
+	     <xsl:with-param name="substr" select="','" />
+	   </xsl:call-template>
+        </xsl:attribute>
+     </xsl:element>
+  </xsl:if>
+  
+  <!-- comment handling -->
+  <xsl:if test="attributes/attribute[ @name = 'commentFeedUri' ]"> 
+     <p>     
+     <xsl:choose>
+        <xsl:when test="count(comments/item) = 0">
+           <b><_span>No comments yet.</_span></b>
+        </xsl:when>
+        <xsl:otherwise>
+	   <b><_span>Comments</_span></b>
+	</xsl:otherwise>
+     </xsl:choose>
+  
+     <!-- Display "comment feed updating" hint -->
+     <xsl:choose>
+        <xsl:when test="comments/updateState = 'updating'">
+           (<span>
+	      <_span>Updating...</_span>
+	    </span>)
+	</xsl:when>
+        <xsl:otherwise>
+           (<a href="liferea-refresh-comments://{sourceId}-{sourceNr}">
+              <_span>Refresh</_span>
+           </a>)
+        </xsl:otherwise>
+     </xsl:choose>
+     
+     </p>
+     
+     <!-- Display error box if necessary -->
+     <xsl:if test="comments/updateError">
+        <p>
+	   <div id="errors">
+	      <div id="updateError">
+	         <xsl:value-of select="comments/updateError"/>
+	      </div>
+	   </div>
+	</p>
+     </xsl:if>
+     
+     <p>     
+        <xsl:apply-templates select="comments/item">
+           <xsl:sort select="time"/>
+        </xsl:apply-templates>
+     </p>    
+  </xsl:if>
+</div>
+</div> <!-- end of shading div -->
+</div> <!-- end of base URL div -->
+
+</div> <!-- item -->
+
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!-- slashdot namespace -->
+<xsl:template match="attributes/attribute[ @name = 'slash']">
+  <span class="slashSection"><_span>Section</_span></span>
+  <span class="slashValue"><xsl:value-of select="substring-before(., ',')"/></span>
+  <span class="slashDepartment"><_span>Department</_span></span>
+  <span class="slashValue"><xsl:value-of select="substring-after(., ',')"/></span>
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!-- enclosure rendering -->
+<xsl:template name="enclosure">
+  <a class="enclosure" href="{.}">
+    <xsl:call-template name="substring-after-last">
+      <xsl:with-param name="input"  select="." />
+      <xsl:with-param name="substr" select="'/'" />
+    </xsl:call-template>
+  </a>
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!-- comment rendering -->
+<xsl:template match="comments/item">
+   <div class="comment">
+      <div class="comment_title"><xsl:value-of select="title"/></div>
+      <div class="comment_body"><xsl:value-of select="description" disable-output-escaping='yes'/></div>
+   </div>
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!--- single item summary mode rendering -->
+<xsl:template name="item_summary">
+
+<xsl:variable name="summaryShading">
+   <xsl:choose>
+      <xsl:when test="readStatus = '0'">summaryshaded</xsl:when>
+      <xsl:otherwise>summaryunshaded</xsl:otherwise>
+   </xsl:choose> summary<xsl:if test="mark = '0'">un</xsl:if>flagged
+</xsl:variable>
+    
+<div class="{$summaryShading}">
+  <table cellspacing="0" cellpadding="0" width="100%">
+  <tr>
+    <td class="summarytime" valign="top">
+      <xsl:value-of select="timestr"/>
+    </td>
+    <td width="100%">
+      <!-- Item title as link -->
+      <a href="{source}">
+        <xsl:value-of select="title"/>
+      </a>
+
+      <!-- summary mode means most of the items have no description,
+           but lets output them for those who have one... -->
+      <xsl:if test="description">
+        <br/><br/>
+        <xsl:value-of select="description" disable-output-escaping='yes'/>
+      </xsl:if>
+
+      <!-- enclosures -->
+      <xsl:for-each select="attributes/attribute[ @name = 'enclosure' ]">
+        (<a class="enclosure" href="{.}">
+          <xsl:call-template name="substring-after-last">
+            <xsl:with-param name="input"  select="." />
+            <xsl:with-param name="substr" select="'/'" />
+          </xsl:call-template>
+        </a>)
+      </xsl:for-each>
+
+    </td>
+  </tr>
+  </table>
+    
+  <hr class='summary'/>
+
+</div>
+</xsl:template>
+
+<!-- ==================================================================== -->
+
+<!--- substring after last occurance also from "XSLT Cookbook"... -->
+<xsl:template name="substring-after-last">
+    <xsl:param name="input" />
+    <xsl:param name="substr" />
+    
+    <!-- Extract the string which comes after the first occurence -->
+    <xsl:variable name="temp" select="substring-after($input,$substr)"/>
+    
+    <xsl:choose>
+      <!-- If it still contains the search string then recursively process -->
+      <xsl:when test="$substr and contains($temp,$substr)">
+        <xsl:call-template name="substring-after-last">
+          <xsl:with-param name="input"  select="$temp" />
+          <xsl:with-param name="substr" select="$substr" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$temp" />
+      </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+</xsl:stylesheet>
